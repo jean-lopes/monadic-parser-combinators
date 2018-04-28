@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public abstract class StringUtils {
-  
+public abstract class Utils {
+
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.isEmpty();
     }
@@ -20,10 +20,13 @@ public abstract class StringUtils {
 
         return Optional.of(Tuple.of(x, xs));
     }
-    
-    public static String asString(List<Character> xs) {
-        return xs.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining());
+
+    public static <A> List<A> cons(A head, List<A> tail) {
+        tail.add(0, head);
+        return tail;
     }
-} 
+
+    public static String asString(List<Character> xs) {
+        return xs.stream().map(Object::toString).collect(Collectors.joining());
+    }
+}

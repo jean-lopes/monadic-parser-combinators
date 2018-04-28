@@ -2,19 +2,11 @@ package parser;
 
 import java.util.Optional;
 
-import utils.StringUtils;
+import utils.Utils;
 import utils.Tuple;
 
 public abstract class Primitives {
 
-    /***
-     * <code>
-     * result :: a -> Parser a<br>
-     * result v = \inp -> [(v,inp)]
-     * </code>
-     * @param value
-     * @return
-     */
     public static <A> Parser<A> result(A value) {
         return input -> Result.of(Tuple.of(value, input));
     }
@@ -26,8 +18,8 @@ public abstract class Primitives {
     public static Parser<Character> item() {
         return input -> {
             Optional<Tuple<Character, String>> opt;
-            
-            if (input.isEmpty() || !(opt = StringUtils.uncons(input)).isPresent())
+
+            if (input.isEmpty() || !(opt = Utils.uncons(input)).isPresent())
                 return Result.empty();
 
             return Result.of(opt.get());

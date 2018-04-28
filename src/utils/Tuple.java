@@ -15,6 +15,6 @@ public final class Tuple<F, S> {
     
     @Override
     public String toString() {
-        return "('" + fst + "', '" + snd + "')";
-    }     
+        return "(" + fst + "," + snd + ")";
+    }
 }
