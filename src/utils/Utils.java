@@ -2,6 +2,7 @@ package utils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 public abstract class Utils {
@@ -28,5 +29,9 @@ public abstract class Utils {
 
     public static String asString(List<Character> xs) {
         return xs.stream().map(Object::toString).collect(Collectors.joining());
+    }
+    
+    public static <A> A foldl(BinaryOperator<A> f, A x, List<A> xs) {        
+        return xs.stream().reduce(x, f);
     }
 }

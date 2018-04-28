@@ -45,4 +45,8 @@ public final class Result<A> {
     public String toString() {
         return deck.toString();
     }
+
+    public boolean isEmpty() {
+        return this.deck.isEmpty();
+    }
 }

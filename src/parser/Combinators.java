@@ -4,9 +4,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import utils.Utils;
 import utils.Tuple;
@@ -18,7 +20,7 @@ public abstract class Combinators {
     }
 
     public static <A, B> Parser<B> then(Parser<A> p, Parser<B> q) {
-        return bind(p, c -> bind(q, x -> Primitives.result(x)));
+        return bind(p, ignored -> bind(q, x -> Primitives.result(x)));
     }
 
     public static <A, B> Parser<Tuple<A, B>> seq(Parser<A> p, Parser<B> q) {
@@ -52,10 +54,10 @@ public abstract class Combinators {
     }
 
     public static <A> Parser<A> plus(Parser<A> p, Parser<A> q) {
-        return input -> {
-            var x = p.apply(input);
+        return in -> {
+            var x = p.apply(in);
 
-            x.deck.addAll(q.apply(input).deck);
+            x.deck.addAll(q.apply(in).deck);
 
             return x;
         };
@@ -130,10 +132,20 @@ public abstract class Combinators {
     }
 
     public static <A> Parser<A> chainl1(Parser<A> p, Parser<BinaryOperator<A>> op) {
-        Function<A, Parser<A>> rest = x -> plus(bind(op, f -> bind(p, y -> Primitives.result(f.apply(x, y)))),
-                Primitives.result(x));
+        Parser<UnaryOperator<A>> fy = bind(op, f -> bind(p, y -> Primitives.result(x -> f.apply(x, y))));
+        
+        Parser<List<UnaryOperator<A>>> fys = many(fy);
 
-        return bind(p, x -> rest.apply(x));
+        BiFunction<A, List<UnaryOperator<A>>, A> foldl = (x, fs) -> fs.stream()
+                .reduce(i -> i, (f, g) -> n -> g.apply(f.apply(n)))
+                .apply(x);
+        
+        return bind(p, x -> bind(fys, ops -> Primitives.result(foldl.apply(x, ops))));
+        
+//        Function<A, Parser<A>> rest = x -> input -> plus(bind(op, f -> bind(p, y -> Primitives.result(f.apply(x, y)))),
+//                Primitives.result(x)).apply(input);
+//
+//        return bind(p, x -> rest.apply(x));
     }
 
     public static <A> Parser<A> chainl(Parser<A> p, Parser<BinaryOperator<A>> op, A v) {
@@ -147,5 +159,11 @@ public abstract class Combinators {
 
     public static <A> Parser<A> chainr(Parser<A> p, Parser<BinaryOperator<A>> op, A v) {
         return plus(chainr1(p, op), Primitives.result(v));
+    }
+    
+    public static <A, B> Parser<BinaryOperator<B>> operators(List<Tuple<Parser<A>, BinaryOperator<B>>> xs) {
+        return xs.stream()
+                .map(x -> Combinators.then(x.fst, Primitives.result(x.snd)))
+                .reduce(Primitives.zero(), Combinators::plus);
     }
 }
