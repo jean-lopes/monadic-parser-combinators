@@ -34,7 +34,8 @@ public final class Result<A> {
     }
 
     public <B> Result<B> concatMap(Function<A, Parser<B>> f) {
-        Deque<Tuple<B, String>> newDeck = this.deck.stream().map(tuple -> f.apply(tuple.fst).apply(tuple.snd))
+        Deque<Tuple<B, String>> newDeck = this.deck.stream()
+                .map(tuple -> f.apply(tuple.fst).apply(tuple.snd))
                 .map(Result::getDeck).flatMap(Deque::stream)
                 .collect(ArrayDeque::new, ArrayDeque::add, ArrayDeque::addAll);
 
