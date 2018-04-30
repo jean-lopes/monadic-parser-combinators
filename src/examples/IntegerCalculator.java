@@ -10,8 +10,7 @@ import parser.Parser;
 import parser.Result;
 import utils.Tuple;
 
-public class IntegerCalculator {    
-     
+public class IntegerCalculator {         
     
     public static Parser<BigInteger> expr() {
         return Combinators.chainl1(term(), addOp());
